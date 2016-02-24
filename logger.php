@@ -1,31 +1,27 @@
 <?php
-$points_limit = 50;
-$sleep_time = 3;
-$sleep_read = 9;
-$dst_dir = '/home/ora/gps-logger/';
-$nmea_src = '/dev/ttyS2';
-$stop_file = '.gpsstoplog';
-$try_limit = 100;
+define('PTS_PER_FILE', 100);        // Размер буфера, в количестве позиций (*2 строк)
+define('PT_INTERVAL',    3);        // Период записи позиций
+define('INACT_INTERVAL', 9);        // Интервалы между обращениями, когда устройство выдаёт неактуальные данные
+define('TRY_LIMIT',     50);        // Количество неудачных чтений
+define('NMEA_DEV', '/dev/ttyS2');   // Путь GPS-устройству, NMEA-сообщений
+define('STOP_FILE', '.gpsstoplog'); // Файл для завершения работф скрипта %)
 
 $points_count = 0;
 while (1) {
-  if (!($gps_src = fopen($nmea_src, 'r'))) {
-    echo "!fopen\n";
+  if (!($gps_src = fopen(NMEA_DEV, 'r'))) {
     fin();
   }
 
   $try_count = 0;
   while (!feof($gps_src) && false !== ($gps_res = fgets($gps_src))) {
-    if (preg_match('/^\$GPRMC\,.{9}\,A/', $gps_res))
+    if (preg_match('/^\$GPRMC\,[\d\.]+\,A\,/', $gps_res))
       break;
-    elseif (++$try_count > $try_limit) {
-      echo "op\n";
-      if (is_file($stop_file)) {
-        echo "stop_file 1\n";
+    if (++$try_count > TRY_LIMIT) {
+      if (is_file(STOP_FILE)) {
         fin();
       } else {
         $try_count = 0;
-        sleep($sleep_read);
+        sleep(INACT_INTERVAL);
       }
     }
   }
@@ -45,10 +41,8 @@ while (1) {
   while (!feof($gps_src) && false !== ($gps_res = fgets($gps_src))) {
     if (preg_match('/^\$GPGGA/', $gps_res))
       break;
-    elseif (++$try_count > $try_limit) {
-      echo "op2\n";
-      if (is_file($stop_file)) {
-        echo "stop_file 2\n";
+    elseif (++$try_count > TRY_LIMIT) {
+      if (is_file(STOP_FILE)) {
         fin();
       }
       else
@@ -60,25 +54,25 @@ while (1) {
 
   fclose($gps_src);
 
-  if ($points_count == $points_limit) {
+  if ($points_count == PTS_PER_FILE) {
     $points_count = 0;
     flush_records();
   }
 
-  if (is_file($stop_file))
+  if (is_file(STOP_FILE))
     fin();
 
-  sleep($sleep_time);
+  sleep(PT_INTERVAL);
 }
 
 function flush_records() {
-  global $dst_dir, $dttm, $records;
-  file_put_contents($dst_dir.$dttm.'.nmea', $records);
+  global $dttm, $records;
+  file_put_contents($dttm.'.nmea', $records);
 }
 
 function fin() {
   global $points_count;
   if ($points_count)
     flush_records();
-  exit;
+  exit();
 }
