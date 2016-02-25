@@ -4,7 +4,7 @@ define('PT_INTERVAL',    3);        // Период записи позиций
 define('INACT_INTERVAL', 9);        // Интервалы между обращениями, когда устройство выдаёт неактуальные данные
 define('TRY_LIMIT',     50);        // Количество неудачных чтений
 define('NMEA_DEV', '/dev/ttyS2');   // Путь GPS-устройству, NMEA-сообщений
-define('STOP_FILE', '.gpsstoplog'); // Файл для завершения работф скрипта %)
+define('STOP_FILE', '.gpsstoplog'); // Файл для завершения работы скрипта %)
 
 $points_count = 0;
 while (1) {

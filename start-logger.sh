@@ -1,5 +1,4 @@
 #!/bin/sh
 
 cd /home/ora/gps-logger/
-rm .gpsstoplog
-/usr/bin/php logger.php > /dev/null 2>&1 &
+/usr/bin/php logger.php > /home/ora/gps-logger/logger.log 2>&1 &
