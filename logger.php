@@ -74,5 +74,6 @@ function fin() {
   global $points_count;
   if ($points_count)
     flush_records();
+  @unlink(STOP_FILE);
   exit();
 }
